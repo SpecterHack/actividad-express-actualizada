@@ -19,27 +19,30 @@ const db = new sqlite3.Database('./base.sqlite3', (err) => {
     db.run(`CREATE TABLE IF NOT EXISTS todos (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         todo TEXT NOT NULL,
-        created_at INTEGER
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 });
 
 // --- ENDPOINTS ---
 
-app.post('/insert', jsonParser, function (req, res) {
+app.post('/agrega_todo', jsonParser, function (req, res) {
     const { todo } = req.body;
 
     if (!todo) {
         return res.status(400).send({ error: 'Falta información necesaria' });
     }
 
-    const stmt = db.prepare('INSERT INTO todos (todo, created_at) VALUES (?, CURRENT_TIMESTAMP)');
+    const stmt = db.prepare('INSERT INTO todos (todo) VALUES (?)');
 
     stmt.run(todo, function(err) {
         if (err) {
             return res.status(500).send(err);
         }
         // Usamos sendStatus o json para terminar correctamente
-        res.status(201).json({ id: this.lastID, message: 'Insert was successful' });
+        res.status(201).json({ 
+            id: this.lastID, 
+            message: 'Insert was successful' 
+        });
     });
     stmt.finalize();
 });
@@ -51,6 +54,20 @@ app.get('/', function (req, res) {
 app.post('/login', jsonParser, function (req, res) {
     res.status(200).json({ 'status': 'ok' });
 });
+
+// Endpoint para obtener todos los TODOs
+app.get('/todos', (req, res) => {
+    db.all("SELECT * FROM todos", [], (err, rows) => {
+        if (err) {
+            console.error("Error al obtener tareas:", err);
+            return res.status(500).json({ error: "Error en la base de datos" });
+        }
+        // Devuelve un JSON con todas las tareas
+        res.status(200).json(rows);
+    });
+});
+
+
 
 // --- INICIO DEL SERVIDOR ---
 
