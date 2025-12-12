@@ -73,10 +73,11 @@ app.get('/todos', (req, res) => {
 
 // Solo escuchamos el puerto si este archivo es el principal (no es un test)
 if (require.main === module) {
-    const port = 3000;
-    app.listen(port, () => {
-        console.log(`Aplicación corriendo en http://localhost:${port}`);
-    });
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Aplicación corriendo en puerto ${PORT}`);
+});
+
 }
 
 // Exportamos app y db para usarlos en los tests
